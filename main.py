@@ -1,8 +1,10 @@
 from flask import Flask, request, send_file, jsonify
 import os
+from flask_cors import CORS;
+
 
 app = Flask(__name__)
-
+CORS(app )
 # Diretório onde as imagens serão armazenadas no container
 IMAGE_DIR = './images'
 os.makedirs(IMAGE_DIR, exist_ok=True)

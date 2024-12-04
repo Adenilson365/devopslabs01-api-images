@@ -48,6 +48,7 @@
 
             try {
                 const response = await fetch(`http://localhost:5001/get-image/${imageId}`);
+                console.log("ImageID:", imageId);
                 if (response.ok) {
                     const imageUrl = response.url;
                     const imageContainer = document.getElementById('imageContainer');
