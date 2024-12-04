@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload and View</title>
+</head>
+<body>
+    <h1>Upload e Visualizar Imagens</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="imageInput" name="image" accept="image/*">
+        <button type="button" onclick="uploadImage()">Upload Imagem</button>
+    </form>
+    <br>
+    <input type="text" id="imageId" placeholder="Digite o ID da imagem">
+    <button onclick="viewImage()">Ver Imagem</button>
+    <div id="imageContainer"></div>
+
+    <script>
+        async function uploadImage() {
+            const formData = new FormData();
+            const imageInput = document.getElementById('imageInput');
+            formData.append('image', imageInput.files[0]);
+            
+            try {
+                const response = await fetch('http://localhost:5001/upload-image', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Imagem salva com sucesso! Image ID: ' + data.image_id);
+                } else {
+                    alert('Erro: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Erro ao enviar a imagem:', error);
+                alert('Erro ao enviar a imagem. Verifique o console para mais detalhes.');
+            }
+        }
+
+        async function viewImage() {
+            const imageId = document.getElementById('imageId').value;
+            if (!imageId) {
+                alert('Por favor, insira um ID de imagem');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:5001/get-image/${imageId}`);
+                if (response.ok) {
+                    const imageUrl = response.url;
+                    const imageContainer = document.getElementById('imageContainer');
+                    imageContainer.innerHTML = `<img src="${imageUrl}" alt="Imagem" width="300">`;
+                } else {
+                    const data = await response.json();
+                    alert('Erro: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Erro ao visualizar a imagem:', error);
+                alert('Erro ao visualizar a imagem. Verifique o console para mais detalhes.');
+            }
+        }
+    </script>
+</body>
+</html>
