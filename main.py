@@ -10,6 +10,8 @@ from opentelemetry.sdk.trace.export import (
     ConsoleSpanExporter,
 )
 
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+
 provider = TracerProvider()
 processor = BatchSpanProcessor(ConsoleSpanExporter())
 provider.add_span_processor(processor)
@@ -20,6 +22,10 @@ trace.set_tracer_provider(provider)
 # Creates a tracer from the global tracer provider
 tracer = trace.get_tracer("my.tracer.name")
 
+otlp_exporter = OTLPSpanExporter(
+    endpoint="tempo.obs.svc.cluster.local:4318/v1/traces",  # Ajuste conforme IP/porta do Collector
+    # headers={"Authorization": "Bearer <token>"},  # se necessário
+)
 
 def do_work():
     with tracer.start_as_current_span("span-name") as span:
