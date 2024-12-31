@@ -3,6 +3,7 @@ import os
 import logging
 from flask_cors import CORS;
 
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import (
@@ -12,10 +13,13 @@ from opentelemetry.sdk.trace.export import (
 
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
-provider = TracerProvider()
+provider = TracerProvider(resource=Resource.create({SERVICE_NAME: "api-images"}))
 processor = BatchSpanProcessor(ConsoleSpanExporter())
 provider.add_span_processor(processor)
-
+trace.set_tracer_provider(provider)
+resource = Resource(attributes={
+    SERVICE_NAME: "api-images"
+})
 # Sets the global default tracer provider
 trace.set_tracer_provider(provider)
 
@@ -23,13 +27,14 @@ trace.set_tracer_provider(provider)
 tracer = trace.get_tracer("my.tracer.name")
 
 otlp_exporter = OTLPSpanExporter(
-    endpoint="tempo.obs.svc.cluster.local:4318/v1/traces",  # Ajuste conforme IP/porta do Collector
+    endpoint="http://opentelemetry-collector.obs.svc.cluster.local:4318/v1/traces",  # Ajuste conforme IP/porta do Collector
     # headers={"Authorization": "Bearer <token>"},  # se necessário
 )
 
 def do_work():
-    with tracer.start_as_current_span("span-name") as span:
+    with tracer.start_as_current_span("work") as span:
         # do some work that 'span' will track
+        span.set_attribute("name", "teste")
         print("doing some work...")
         # When the 'with' block goes out of scope, 'span' is closed for you
 
