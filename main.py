@@ -3,6 +3,31 @@ import os
 import logging
 from flask_cors import CORS;
 
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import (
+    BatchSpanProcessor,
+    ConsoleSpanExporter,
+)
+
+provider = TracerProvider()
+processor = BatchSpanProcessor(ConsoleSpanExporter())
+provider.add_span_processor(processor)
+
+# Sets the global default tracer provider
+trace.set_tracer_provider(provider)
+
+# Creates a tracer from the global tracer provider
+tracer = trace.get_tracer("my.tracer.name")
+
+
+def do_work():
+    with tracer.start_as_current_span("span-name") as span:
+        # do some work that 'span' will track
+        print("doing some work...")
+        # When the 'with' block goes out of scope, 'span' is closed for you
+
+
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(asctime)s - %(message)s')
 
 app = Flask(__name__)
@@ -13,6 +38,7 @@ os.makedirs(IMAGE_DIR, exist_ok=True)
 
 @app.route('/upload-image', methods=['POST'])
 def upload_image():
+    do_work()
     if 'image' not in request.files:
         logging.error("Nenhuma imagem enviada")
         return jsonify({'error': 'Nenhuma imagem enviada'}), 400
@@ -31,6 +57,7 @@ def upload_image():
 
 @app.route('/get-image/<string:image_id>', methods=['GET'])
 def get_image(image_id):
+    do_work()
     try:
         # Busca a imagem pelo ID
         image_path = os.path.join(IMAGE_DIR, image_id)
