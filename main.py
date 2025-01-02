@@ -9,6 +9,10 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
+logger.handlers[0].setFormatter(logging.Formatter("time: %(asctime)s - %(levelname)s - line: %(lineno)d - file: %(filename)s - msg: %(message)s"))
+
+
+
 
 app = Flask(__name__)
 CORS(app)
@@ -19,12 +23,12 @@ os.makedirs(IMAGE_DIR, exist_ok=True)
 @app.route('/upload-image', methods=['POST'])
 def upload_image():
     if 'image' not in request.files:
-        logger.error("ERRO: Nenhuma imagem enviada!")
+        logger.error("Nenhuma imagem enviada!")
         return jsonify({'error': 'Nenhuma imagem enviada'}), 400
     
     image = request.files['image']
     if image.filename == '':
-        logger.error("ERRO: Nome de arquivo Inválido")
+        logger.error("Nome de arquivo Inválido")
         return jsonify({'error': 'Nome de arquivo inválido'}), 400
     
     # Salva a imagem no diretório de imagens do container
@@ -41,12 +45,12 @@ def get_image(image_id):
         image_path = os.path.join(IMAGE_DIR, image_id)
         
         if not os.path.exists(image_path):
-            logger.error(f"ERRO: Imagem não encontrada! ID: {image_id}")
+            logger.error(f"Imagem não encontrada! ID: {image_id}")
             return jsonify({'error': 'Imagem não encontrada'}), 404
         
-        logger.info(f'INFO: Imagem encontrada: {image_id}')
+        logger.info(f'Imagem encontrada: {image_id}')
         return send_file(image_path, mimetype='image/png')
     except Exception as e:
-        logger.error("ERRO: ao carregar imagem!")
+        logger.error("Erro ao carregar imagem!")
         return jsonify({'error': f'Erro ao carregar a imagem: {str(e)}'}), 500
 
