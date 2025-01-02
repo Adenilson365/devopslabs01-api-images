@@ -3,7 +3,12 @@ import os
 import logging
 from flask_cors import CORS
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(asctime)s - %(message)s')
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
+
 
 app = Flask(__name__)
 CORS(app)
@@ -14,19 +19,19 @@ os.makedirs(IMAGE_DIR, exist_ok=True)
 @app.route('/upload-image', methods=['POST'])
 def upload_image():
     if 'image' not in request.files:
-        logging.error("Nenhuma imagem enviada!")
+        logger.error("ERRO: Nenhuma imagem enviada!")
         return jsonify({'error': 'Nenhuma imagem enviada'}), 400
     
     image = request.files['image']
     if image.filename == '':
-        logging.error("Nome de arquivo Inválido")
+        logger.error("ERRO: Nome de arquivo Inválido")
         return jsonify({'error': 'Nome de arquivo inválido'}), 400
     
     # Salva a imagem no diretório de imagens do container
     image_path = os.path.join(IMAGE_DIR, image.filename)
     print(image_path)
     image.save(image_path)
-    logging.info("Imagem salva com sucesso!")
+    logger.info(f"Imagem salva com sucesso! ID: {image.filename}")
     return jsonify({'message': 'Imagem salva com sucesso', 'image_id': image.filename}), 201
 
 @app.route('/get-image/<string:image_id>', methods=['GET'])
@@ -36,12 +41,12 @@ def get_image(image_id):
         image_path = os.path.join(IMAGE_DIR, image_id)
         
         if not os.path.exists(image_path):
-            logging.error("Imagem não encontrada!")
+            logger.error(f"ERRO: Imagem não encontrada! ID: {image_id}")
             return jsonify({'error': 'Imagem não encontrada'}), 404
         
-        logging.info({f'INFO: Imagem encontrada: {image_id}'})
+        logger.info(f'INFO: Imagem encontrada: {image_id}')
         return send_file(image_path, mimetype='image/png')
     except Exception as e:
-        logging.error("Erro ao carregar imagem!")
+        logger.error("ERRO: ao carregar imagem!")
         return jsonify({'error': f'Erro ao carregar a imagem: {str(e)}'}), 500
 
