@@ -3,13 +3,36 @@ import os
 import logging
 from flask_cors import CORS
 
+#Import OTEL
+from opentelemetry.sdk.resources import (Resource, SERVICE_NAME) 
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.metrics import get_meter
+from opentelemetry.sdk.metrics.export import (PeriodicExportingMetricReader, ConsoleMetricExporter)
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+
+#Config otel
+resource = Resource(
+    attributes={
+        SERVICE_NAME : "api-images"
+    }
+)
+reader_console = PeriodicExportingMetricReader(ConsoleMetricExporter())
+reader_otlp = PeriodicExportingMetricReader(OTLPMetricExporter())
+provider = MeterProvider(resource=resource, metric_readers=[reader_console, reader_otlp])
+
+meter = get_meter(__name__, meter_provider=provider)
+
+counter = meter.create_counter(name="images_get", description="Number of images get", unit="1")
+
+http_counter = meter.create_counter(name="http_requests", description="Number of HTTP requests", unit="1")
 
 
+#Config Logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
-
 logger.handlers[0].setFormatter(logging.Formatter("time: %(asctime)s - %(levelname)s - line: %(lineno)d - file: %(filename)s - msg: %(message)s"))
+
 
 
 
@@ -47,7 +70,14 @@ def get_image(image_id):
         if not os.path.exists(image_path):
             logger.error(f"Imagem não encontrada! ID: {image_id}")
             return jsonify({'error': 'Imagem não encontrada'}), 404
-        
+        counter.add(
+            amount=1,
+            attributes={
+                "image_id": image_id,
+                "method": "get",
+                "service": "api-images"
+                }
+        )
         logger.info(f'Imagem encontrada: {image_id}')
         return send_file(image_path, mimetype='image/png')
     except Exception as e:
