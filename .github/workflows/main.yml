@@ -35,3 +35,29 @@ jobs:
         
       - name: Push the Docker image tag latest
         run: docker tag ${{ steps.meta.outputs.tags }} adenilsonkon/devopslabs-api-images:latest && docker push adenilsonkon/devopslabs-api-images:latest
+      
+      - name: Atualiza tag no repositório OPS
+        uses: actions/checkout@v4
+        with: 
+          repository: Adenilson365/devopslabs01-ops-api-images
+          token: ${{ secrets.GITHUB_TOKEN_GIT }}
+          path: .
+
+      - name: Atualiza tag no repositório OPS
+        run: |
+          pwd
+          cat ./application/deployments/deployment.yaml
+          sed -i "s|image: adenilsonkon/devopslabs-api-images:.*|image: adenilsonkon/devopslabs-api-images:${{ steps.meta.outputs.tags }}|g" ./application/deployments/deployment.yaml
+          cat ./application/deployments/deployment.yaml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_GIT }}
+      - name: Commit and push changes
+        run: | 
+          pwd
+          git config  user.name "GitHub Actions"
+          git config  user.email "actions@github.com"
+          git add .
+          git commit -m "Atualiza tag do docker image para ${{ steps.meta.outputs.tags }}"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_GIT }}
