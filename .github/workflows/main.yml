@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v4
         with: 
           repository: Adenilson365/devopslabs01-ops-api-images
-          token: ${{ secrets.GITHUB_TOKEN_GIT }}
+          token: ${{ secrets.ACCESS_TOKEN_GIT }}
           path: .
 
       - name: Atualiza tag no repositório OPS
@@ -50,7 +50,7 @@ jobs:
           sed -i "s|image: adenilsonkon/devopslabs-api-images:.*|image: adenilsonkon/devopslabs-api-images:${{ steps.meta.outputs.tags }}|g" ./application/deployments/deployment.yaml
           cat ./application/deployments/deployment.yaml
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_GIT }}
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN_GIT }}
       - name: Commit and push changes
         run: | 
           pwd
@@ -60,4 +60,4 @@ jobs:
           git commit -m "Atualiza tag do docker image para ${{ steps.meta.outputs.tags }}"
           git push
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_GIT }}
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN_GIT }}
