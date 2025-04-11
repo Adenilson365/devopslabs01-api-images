@@ -2,9 +2,9 @@ name: Publish docker image on DockerHub
 
 on:
   push: 
-    branches: ["main"]
+    branches: ["main, dev"]
   pull_request:
-    branches: ["main"]
+    branches: ["main, dev"]
   workflow_dispatch:
 jobs:
   build:
