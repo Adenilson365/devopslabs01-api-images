@@ -23,7 +23,7 @@ jobs:
             adenilsonkon/devopslabs-api-images
           tags: |
             type=sha
-            type=ref,event=branch,prefix=,suffix=-$SHORT_SHA
+            type=ref,event=branch,prefix=,suffix=-${{ env.SHORT_SHA }}
 
       - name: Build the Docker image
         run: |
